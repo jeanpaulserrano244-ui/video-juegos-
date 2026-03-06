@@ -59,6 +59,7 @@ nav ul li a::before {
     top: 20px ;
     position:absolute ;
     transition: width 0.2s;
+    left: 0;
  
 }
 nav ul li a:hover::before 

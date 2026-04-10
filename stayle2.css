@@ -93,4 +93,5 @@ ul {
 }
 #desventajas-videojuegos + ol {
     list-style-type: decimal !important;
+    margin-left: 20px;
 }

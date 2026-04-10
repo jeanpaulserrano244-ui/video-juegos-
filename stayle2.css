@@ -91,3 +91,6 @@ ul {
     margin-left: 20px;
     margin-top: 10px;
 }
+#desventajas-videojuegos + ol {
+    list-style-type: decimal !important;
+}

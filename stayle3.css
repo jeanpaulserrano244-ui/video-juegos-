@@ -61,3 +61,6 @@ li button:hover {
     margin-left: 20px;
     margin-top: 10px;
 }
+#commentList {
+    list-style-type: decimal !important;
+}

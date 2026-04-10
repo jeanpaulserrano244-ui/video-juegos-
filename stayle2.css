@@ -79,7 +79,7 @@ section {
 h2 {
     text-align: center;
     color: white;
-    background-color: rgb(7, 3, 238);
+    background-color: rgb(121, 121, 123);
     padding: 10px;
 }
 ol {
@@ -129,6 +129,6 @@ ul {
 /* Texto dentro de párrafos */
 .section-box p {
     font-size: 18px;
-    color: #333;
+    color: #000000;
     line-height: 1.6;
 }

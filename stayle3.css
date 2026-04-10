@@ -56,3 +56,6 @@ li button {
 li button:hover {
     background-color: #f43636;
 }
+#commentList {
+    list-style-type: decimal; /* fuerza numeración */
+}

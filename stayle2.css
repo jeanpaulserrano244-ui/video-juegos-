@@ -83,6 +83,7 @@ h2 {
     padding: 10px;
 }
 ol {
+    list-style-type: decimal; /* activa numeración */
     margin-left: 20px;
     margin-top: 10px;
 }

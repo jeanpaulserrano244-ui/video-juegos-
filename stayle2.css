@@ -91,33 +91,44 @@ ul {
     margin-left: 20px;
     margin-top: 10px;
 }
-/* Caja de desventajas */
-.desventajas-box {
-    background-color: #f5f5f5;   /* fondo gris claro */
-    padding: 20px;
-    border-radius: 10px;
+/* Caja para todas las secciones */
+.section-box {
+    background-color: #f0f0f0;   /* fondo gris claro */
+    padding: 25px;
+    border-radius: 12px;
     margin: 20px 0;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.2);
+    font-size: 18px; /* letra más grande en todo el bloque */
 }
 
-/* Título */
-#desventajas-videojuegos {
-    font-size: 28px;   /* letra más grande */
-    color: #333;
+/* Títulos de secciones */
+#ventajas-videojuegos,
+#desventajas-videojuegos,
+#conclusion-videojuegos {
+    font-size: 30px;   /* letra más grande para títulos */
+    color: #222;
     margin-bottom: 15px;
+    text-align: left;
 }
 
 /* Lista principal numerada */
-.desventajas-box ol {
-    list-style-type: decimal; /* muestra números */
-    font-size: 18px;          /* letra más grande */
+.section-box ol {
+    list-style-type: decimal;
     margin-left: 25px;
+    margin-top: 10px;
 }
 
 /* Subpuntos con viñetas */
-.desventajas-box ul {
+.section-box ul {
     list-style-type: disc;
     margin-left: 40px;
+    color: #333;
     font-size: 16px;
-    color: #444;
+}
+
+/* Texto dentro de párrafos */
+.section-box p {
+    font-size: 18px;
+    color: #333;
+    line-height: 1.6;
 }

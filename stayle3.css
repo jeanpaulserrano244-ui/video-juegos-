@@ -58,4 +58,6 @@ li button:hover {
 }
 #commentList {
     list-style-type: decimal; /* fuerza numeración */
+    margin-left: 20px;
+    margin-top: 10px;
 }

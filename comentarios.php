@@ -7,7 +7,6 @@ $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
 
-$dsnNoDb = "mysql:host=$host;charset=$charset";
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -16,8 +15,6 @@ $options = [
 ];
 
 try {
-    $pdo = new PDO($dsnNoDb, $user, $pass, $options);
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS `$db` CHARACTER SET $charset COLLATE ${charset}_unicode_ci");
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
     http_response_code(500);
@@ -25,23 +22,13 @@ try {
     exit;
 }
 
-$createTableSql = "CREATE TABLE IF NOT EXISTS comentarios (
-    id VARCHAR(32) PRIMARY KEY,
-    descripcion TEXT NOT NULL,
-    fecha DATETIME NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-$pdo->exec($createTableSql);
-
-// Verificar columnas existentes y reparar si faltan.
 $stmt = $pdo->query("SHOW COLUMNS FROM comentarios");
-$currentColumns = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-if (!in_array('descripcion', $currentColumns, true)) {
-    $pdo->exec("ALTER TABLE comentarios ADD COLUMN descripcion TEXT NOT NULL AFTER id");
-}
-
-if (!in_array('fecha', $currentColumns, true)) {
-    $pdo->exec("ALTER TABLE comentarios ADD COLUMN fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER descripcion");
+$columns = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$textColumns = array_intersect(['descripcion', 'comentario'], $columns);
+if (empty($textColumns)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'La tabla comentarios no tiene columnas válidas para almacenar el texto.']);
+    exit;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -76,13 +63,19 @@ if ($method === 'POST') {
         exit;
     }
 
-    $id = uniqid('c', true);
-    $fecha = date('Y-m-d H:i:s');
+    $insertColumns = [];
+    $insertValues = [];
+    foreach ($textColumns as $column) {
+        $insertColumns[] = $column;
+        $insertValues[] = $descripcion;
+    }
 
-    $stmt = $pdo->prepare('INSERT INTO comentarios (id, descripcion, fecha) VALUES (?, ?, ?)');
-    $stmt->execute([$id, $descripcion, $fecha]);
+    $columnsSql = implode(', ', $insertColumns);
+    $placeholders = implode(', ', array_fill(0, count($insertColumns), '?'));
+    $stmt = $pdo->prepare("INSERT INTO comentarios ($columnsSql) VALUES ($placeholders)");
+    $stmt->execute($insertValues);
 
-    $stmt = $pdo->query('SELECT id, descripcion, fecha FROM comentarios ORDER BY fecha ASC');
+    $stmt = $pdo->query('SELECT id, descripcion, comentario, fecha FROM comentarios ORDER BY fecha ASC');
     $comments = $stmt->fetchAll();
     echo json_encode(['success' => true, 'comments' => $comments], JSON_UNESCAPED_UNICODE);
     exit;

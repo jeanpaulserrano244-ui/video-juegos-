@@ -118,7 +118,7 @@ class listaComentarios {
         this.comentario.forEach((comentario) => {
             const li = document.createElement('li');
             const texto = document.createElement('span');
-            texto.textContent = comentario.descripcion;
+            texto.textContent = comentario.descripcion || comentario.comentario || '';
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Eliminar';

@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-$host = '127.0.0.1';
+$host = 'localhost';
 $db   = 'comentarios';
 $user = 'root';
 $pass = '';

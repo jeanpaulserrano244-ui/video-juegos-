@@ -28,7 +28,16 @@ class listaComentarios {
         }
     }
 
+    isRunningFromFile() {
+        return window.location.protocol === 'file:';
+    }
+
     async cargarComentarios() {
+        if (this.isRunningFromFile()) {
+            this.setError('Abre esta página desde XAMPP. Usa http://localhost/video-juegos-/index.html');
+            return;
+        }
+
         try {
             const response = await fetch(this.apiUrl, {
                 method: 'GET',
@@ -49,6 +58,11 @@ class listaComentarios {
     }
 
     async agregarComentario(descripcion) {
+        if (this.isRunningFromFile()) {
+            this.setError('Abre esta página desde XAMPP. Usa http://localhost/video-juegos-/index.html');
+            return;
+        }
+
         try {
             this.clearError();
             const response = await fetch(this.apiUrl, {

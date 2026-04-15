@@ -32,6 +32,18 @@ $createTableSql = "CREATE TABLE IF NOT EXISTS comentarios (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 $pdo->exec($createTableSql);
 
+// Verificar columnas existentes y reparar si faltan.
+$stmt = $pdo->query("SHOW COLUMNS FROM comentarios");
+$currentColumns = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+if (!in_array('descripcion', $currentColumns, true)) {
+    $pdo->exec("ALTER TABLE comentarios ADD COLUMN descripcion TEXT NOT NULL AFTER id");
+}
+
+if (!in_array('fecha', $currentColumns, true)) {
+    $pdo->exec("ALTER TABLE comentarios ADD COLUMN fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER descripcion");
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {

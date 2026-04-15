@@ -1,18 +1,39 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-$filename = __DIR__ . '/comentarios.json';
-if (!file_exists($filename)) {
-    file_put_contents($filename, json_encode([]));
+
+$host = '127.0.0.1';
+$db   = 'comentarios';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Error de conexión a la base de datos: ' . $e->getMessage()]);
+    exit;
 }
 
-$comments = json_decode(file_get_contents($filename), true);
-if (!is_array($comments)) {
-    $comments = [];
-}
+$createTableSql = "CREATE TABLE IF NOT EXISTS comentarios (
+    id VARCHAR(32) PRIMARY KEY,
+    descripcion TEXT NOT NULL,
+    fecha DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+$pdo->exec($createTableSql);
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
+    $stmt = $pdo->query('SELECT id, descripcion, fecha FROM comentarios ORDER BY fecha ASC');
+    $comments = $stmt->fetchAll();
     echo json_encode($comments, JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -24,11 +45,12 @@ if (!is_array($input)) {
 
 if ($method === 'POST') {
     if (isset($input['action']) && $input['action'] === 'delete' && isset($input['id'])) {
-        $comments = array_values(array_filter($comments, function ($comment) use ($input) {
-            return !isset($comment['id']) || $comment['id'] !== $input['id'];
-        }));
-        file_put_contents($filename, json_encode($comments, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        echo json_encode(['success' => true, 'comments' => $comments]);
+        $stmt = $pdo->prepare('DELETE FROM comentarios WHERE id = ?');
+        $stmt->execute([$input['id']]);
+
+        $stmt = $pdo->query('SELECT id, descripcion, fecha FROM comentarios ORDER BY fecha ASC');
+        $comments = $stmt->fetchAll();
+        echo json_encode(['success' => true, 'comments' => $comments], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -39,15 +61,15 @@ if ($method === 'POST') {
         exit;
     }
 
-    $newComment = [
-        'id' => uniqid('c', true),
-        'descripcion' => $descripcion,
-        'fecha' => date('c'),
-    ];
-    $comments[] = $newComment;
-    file_put_contents($filename, json_encode($comments, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    $id = uniqid('c', true);
+    $fecha = date('Y-m-d H:i:s');
 
-    echo json_encode(['success' => true, 'comments' => $comments]);
+    $stmt = $pdo->prepare('INSERT INTO comentarios (id, descripcion, fecha) VALUES (?, ?, ?)');
+    $stmt->execute([$id, $descripcion, $fecha]);
+
+    $stmt = $pdo->query('SELECT id, descripcion, fecha FROM comentarios ORDER BY fecha ASC');
+    $comments = $stmt->fetchAll();
+    echo json_encode(['success' => true, 'comments' => $comments], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

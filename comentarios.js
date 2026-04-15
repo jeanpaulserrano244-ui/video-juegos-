@@ -1,46 +1,117 @@
 class listaComentarios {
     constructor() {
         this.comentario = [];
-        this.storageKey = 'videojuegosComentarios';
+        this.apiUrl = 'comentarios.php';
+        this.errorElement = document.getElementById('commentError');
     }
 
-    cargarComentarios() {
-        const saved = localStorage.getItem(this.storageKey);
-        this.comentario = saved ? JSON.parse(saved) : [];
-        this.mostrarComentarios();
+    setError(mensaje) {
+        if (this.errorElement) {
+            this.errorElement.textContent = mensaje;
+        } else {
+            console.error(mensaje);
+        }
     }
 
-    guardarComentarios() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.comentario));
+    clearError() {
+        if (this.errorElement) {
+            this.errorElement.textContent = '';
+        }
     }
 
-    agregarComentario(descripcion) {
-        const nuevoComentario = {
-            id: Date.now().toString(),
-            descripcion,
-        };
-        this.comentario.push(nuevoComentario);
-        this.guardarComentarios();
-        this.mostrarComentarios();
+    async parseResponse(response) {
+        const text = await response.text();
+        try {
+            return JSON.parse(text);
+        } catch {
+            return { error: text || response.statusText };
+        }
     }
 
-    eliminarComentario(id) {
-        this.comentario = this.comentario.filter((comentario) => comentario.id !== id);
-        this.guardarComentarios();
-        this.mostrarComentarios();
+    async cargarComentarios() {
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+            });
+
+            const data = await this.parseResponse(response);
+            if (!response.ok || data.error) {
+                throw new Error(data.error || 'Error al cargar comentarios');
+            }
+
+            this.comentario = data;
+            this.mostrarComentarios();
+        } catch (error) {
+            console.error(error);
+            this.setError('No se pudieron cargar los comentarios. Abre la página desde XAMPP.');
+        }
+    }
+
+    async agregarComentario(descripcion) {
+        try {
+            this.clearError();
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descripcion }),
+            });
+
+            const data = await this.parseResponse(response);
+            if (!response.ok || data.error) {
+                throw new Error(data.error || 'Error al guardar el comentario');
+            }
+
+            this.comentario = data.comments || [];
+            this.mostrarComentarios();
+        } catch (error) {
+            console.error(error);
+            this.setError(error.message || 'No se pudo guardar el comentario. Intenta de nuevo.');
+        }
+    }
+
+    async eliminarComentario(id) {
+        try {
+            this.clearError();
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', id }),
+            });
+
+            const data = await this.parseResponse(response);
+            if (!response.ok || data.error) {
+                throw new Error(data.error || 'Error al eliminar el comentario');
+            }
+
+            this.comentario = data.comments || [];
+            this.mostrarComentarios();
+        } catch (error) {
+            console.error(error);
+            this.setError(error.message || 'No se pudo eliminar el comentario. Intenta de nuevo.');
+        }
     }
 
     mostrarComentarios() {
         const commentList = document.getElementById('commentList');
         commentList.innerHTML = '';
+
+        if (!this.comentario.length) {
+            commentList.innerHTML = '<li>No hay comentarios aún.</li>';
+            return;
+        }
+
         this.comentario.forEach((comentario) => {
             const li = document.createElement('li');
-            li.textContent = comentario.descripcion;
+            const texto = document.createElement('span');
+            texto.textContent = comentario.descripcion;
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Eliminar';
+            deleteButton.type = 'button';
             deleteButton.addEventListener('click', () => this.eliminarComentario(comentario.id));
 
+            li.appendChild(texto);
             li.appendChild(deleteButton);
             commentList.appendChild(li);
         });
@@ -52,13 +123,13 @@ const listacomentarios = new listaComentarios();
 window.addEventListener('DOMContentLoaded', () => {
     listacomentarios.cargarComentarios();
 
-    document.getElementById('commentForm').addEventListener('submit', (event) => {
+    document.getElementById('commentForm').addEventListener('submit', async (event) => {
         event.preventDefault();
         const commentInput = document.getElementById('commentInput');
         const descripcion = commentInput.value.trim();
 
         if (descripcion) {
-            listacomentarios.agregarComentario(descripcion);
+            await listacomentarios.agregarComentario(descripcion);
             commentInput.value = '';
         }
     });

@@ -1,55 +1,33 @@
 class listaComentarios {
     constructor() {
         this.comentario = [];
+        this.storageKey = 'videojuegosComentarios';
     }
 
-    async cargarComentarios() {
-        try {
-            const response = await fetch('comentarios.php');
-            if (!response.ok) {
-                throw new Error('Error al cargar comentarios');
-            }
-            this.comentario = await response.json();
-            this.mostrarComentarios();
-        } catch (error) {
-            console.error(error);
-        }
+    cargarComentarios() {
+        const saved = localStorage.getItem(this.storageKey);
+        this.comentario = saved ? JSON.parse(saved) : [];
+        this.mostrarComentarios();
     }
 
-    async agregarComentario(descripcion) {
-        try {
-            const response = await fetch('comentarios.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ descripcion }),
-            });
-            if (!response.ok) {
-                throw new Error('Error al guardar el comentario');
-            }
-            const data = await response.json();
-            this.comentario = data.comments;
-            this.mostrarComentarios();
-        } catch (error) {
-            console.error(error);
-        }
+    guardarComentarios() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.comentario));
     }
 
-    async eliminarComentario(id) {
-        try {
-            const response = await fetch('comentarios.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'delete', id }),
-            });
-            if (!response.ok) {
-                throw new Error('Error al eliminar el comentario');
-            }
-            const data = await response.json();
-            this.comentario = data.comments;
-            this.mostrarComentarios();
-        } catch (error) {
-            console.error(error);
-        }
+    agregarComentario(descripcion) {
+        const nuevoComentario = {
+            id: Date.now().toString(),
+            descripcion,
+        };
+        this.comentario.push(nuevoComentario);
+        this.guardarComentarios();
+        this.mostrarComentarios();
+    }
+
+    eliminarComentario(id) {
+        this.comentario = this.comentario.filter((comentario) => comentario.id !== id);
+        this.guardarComentarios();
+        this.mostrarComentarios();
     }
 
     mostrarComentarios() {

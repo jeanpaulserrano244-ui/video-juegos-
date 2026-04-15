@@ -33,19 +33,18 @@ button:hover {
     background-color: #45a045;
 }
 
-ul {
+.container ul {
     list-style-type: none;
     padding: 0;
 }
-li {
-   
+.container li {
     padding: 10px;
     border-bottom: 1px solid #ddd;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-li button {
+.container li button {
     background-color: #a04545;
     padding: 5px 10px;
     border: none;
@@ -53,6 +52,6 @@ li button {
     color: white;
     cursor: pointer;
 }
-li button:hover {
+.container li button:hover {
     background-color: #f43636;
 }
